@@ -8,6 +8,10 @@ requirements = []
 path = "contracts/pulsebeam.clar"
 depends_on = []
 
+[contracts.pulsebeam-notifications]
+path = "contracts/pulsebeam-notifications.clar"
+depends_on = []
+
 [repl]
 costs_version = 2
 parser_version = 2
