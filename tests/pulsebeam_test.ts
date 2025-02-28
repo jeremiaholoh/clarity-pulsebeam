@@ -15,7 +15,7 @@ Clarinet.test({
     let block = chain.mineBlock([
       Tx.contractCall("pulsebeam", "create-task", [
         types.ascii("Test Task"),
-        types.uint(1000),
+        types.uint(9999999999), // Future timestamp
         types.bool(true),
         types.bool(false)
       ], wallet_1.address)
@@ -28,6 +28,25 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "Ensure past deadline fails",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const wallet_1 = accounts.get("wallet_1")!;
+    
+    let block = chain.mineBlock([
+      Tx.contractCall("pulsebeam", "create-task", [
+        types.ascii("Test Task"),
+        types.uint(1000), // Past timestamp
+        types.bool(true),
+        types.bool(false)
+      ], wallet_1.address)
+    ]);
+    
+    assertEquals(block.receipts.length, 1);
+    block.receipts[0].result.expectErr().expectUint(102);
+  },
+});
+
+Clarinet.test({
   name: "Ensure can complete task",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const wallet_1 = accounts.get("wallet_1")!;
@@ -35,7 +54,7 @@ Clarinet.test({
     let block = chain.mineBlock([
       Tx.contractCall("pulsebeam", "create-task", [
         types.ascii("Test Task"),
-        types.uint(1000),
+        types.uint(9999999999),
         types.bool(true),
         types.bool(false)
       ], wallet_1.address),
