@@ -26,7 +26,10 @@
   (let
     (
       (task-id (var-get task-nonce))
+      (current-time (unwrap! (get-block-info? time u0) (err err-invalid-deadline)))
     )
+    ;; Validate deadline is in the future
+    (asserts! (> deadline current-time) (err err-invalid-deadline))
     (map-insert tasks
       { task-id: task-id }
       {
@@ -61,5 +64,28 @@
 )
 
 (define-read-only (get-user-tasks (user principal))
-  (ok (map-get? tasks { owner: user }))
+  (let
+    ((task-count (var-get task-nonce)))
+    (filter tasks
+      (lambda (task)
+        (is-eq (get owner (get value task)) user)
+      )
+      task-count
+    )
+  )
+)
+
+(define-read-only (get-pending-tasks (user principal))
+  (let
+    ((task-count (var-get task-nonce)))
+    (filter tasks
+      (lambda (task)
+        (and
+          (is-eq (get owner (get value task)) user)
+          (not (get completed (get value task)))
+        )
+      )
+      task-count
+    )
+  )
 )
